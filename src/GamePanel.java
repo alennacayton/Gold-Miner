@@ -1,3 +1,4 @@
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.imageio.ImageIO;
@@ -319,7 +320,7 @@ public class GamePanel extends JPanel implements ActionListener{
         System.out.println("x == " + x + " y == " + y);
 
         board.getBox(row,col).setVisited(true);
-        System.out.println("SET VISITED TO TRUE FOR ROW AND COL : " + row + " " + col);
+      //  System.out.println("SET VISITED TO TRUE FOR ROW AND COL : " + row + " " + col);
 
         switch(direction) {
             case 'U':
@@ -343,37 +344,169 @@ public class GamePanel extends JPanel implements ActionListener{
 
     }
 
+    // returns the number of squares to gold, 0 if not in the direction
 
-    public int beacon(int rowPos, int colPos)
+    public int beacon(int row, int col)
     {
-        int row = 0;
-        int col = 0;
+        int x2 = 0;
+        int y2 = 0;
 
-    // check all four directions for gold except for position //
+        int check = 0;
 
-        // check above
+        switch(direction){
 
-        while(row != -1 )
-        {
-            row = rowPos - 1;
-            col = colPos;
-
-
-            if(board.getBox(row,col).getState() == 'G')
-            {
-
-            }
-
-
-
+            case 'R': check = 1; break;
+            case 'D': check = 2; break;
+            case 'L': check = 3; break;
+            case 'U': check = 4; break;
+            default: break;
         }
 
 
 
+        for(int x = 0; x < 4; x++)
+        {
+
+            int count = 0;
+            if (check == 1)
+            {
+                x2 = x + UNIT_SIZE;
+                y2 = y;
+            }
+
+            else if(check  == 2)
+            {
+                x2 = x;
+                y2 = y + UNIT_SIZE;
+
+            }
+
+            else if (check == 3)
+            {
+                x2 = x - UNIT_SIZE;
+                y2 = y;
+
+
+            }
+
+            else if (check  == 4)
+            {
+
+                x2 = x;
+                y2 = y - UNIT_SIZE;
+
+            }
+
+            if(!checkCollision(x2,y2))
+            {
+                // check all four directions for first occurrence of any entity aside from a blank tile
+                if (check == 1)
+                {
+                    System.out.println("ENTERED RIGHT");
+
+                    for(int i = col + 1; i < n; i++)
+                    {
+                        System.out.println("hello");
+                        count += 1;
+
+                        if(board.getBox(row,i).getState() == 'G')
+                            return count;
+                        if(board.getBox(row,i).getState() == 'P')
+                        {
+                            System.out.println("entered state p");
+                            return 0;
+                        }
 
 
 
-        return 0;
+                    }
+
+
+                    // row2 = row
+                    //  col2 = col + 1
+                }
+
+                else if(check == 2)
+                {
+                    System.out.println("ENTERED DOWN");
+
+
+                    for(int i = row + 1; i < n; i++)
+                    {
+                        count += 1;
+
+                        if(board.getBox(i,col).getState() == 'G')
+                            return count;
+                        if(board.getBox(i,col).getState() == 'P')
+                            return 0;
+
+
+                    }
+
+                    //    row2 = row + 1
+                    //    col2 = col
+
+                }
+
+                else if (check == 3)
+                {
+                    System.out.println("ENTERED LEFT");
+
+                    for(int i = col - 1; i > n; i--)
+                    {
+                        count += 1;
+
+                        if(board.getBox(row,i).getState() == 'G')
+                            return count;
+                        if(board.getBox(row,i).getState() == 'P')
+                            return 0;
+
+
+                    }
+
+
+                    //  row2 = row
+                    // col2 = col - 1
+
+
+                }
+
+                else if (check  == 4)
+                {
+                    System.out.println("ENTERED UP");
+
+                    for(int i = row - 1; i > n; i--)
+                    {
+                        count += 1;
+
+                        if(board.getBox(i,col).getState() == 'G')
+                            return count;
+                        if(board.getBox(i,col).getState() == 'P')
+                            return 0;
+
+
+                    }
+
+
+                    //   row2 = row - 1
+                    //   col2 = col
+
+                }
+
+
+              //  return 0;
+            }
+
+        //    rotate(); // should be temporary check only not rotate
+
+            check++;
+
+        }
+
+
+       return 0;
+
+
     }
 
 
@@ -750,6 +883,207 @@ public class GamePanel extends JPanel implements ActionListener{
 
 
             move();
+
+            int x3 = 0, y3 = 0;
+
+            // if miner moved to beacon
+            if(b.getState() == 'B')
+            {
+
+                System.out.println("Inside beacon..");
+                int numtiles = beacon(b.getRow(), b.getCol());
+
+                System.out.println("GOLD IS " + numtiles + " tiles away!" );
+
+
+
+                if( numtiles != 0)
+                {
+                    // algo for beacon
+
+                    for(int p = 0; p < 4 ; p++)
+                    {
+                        //check collision here before proceeding//
+                        if (direction == 'R')
+                        {
+                            x3 = x + UNIT_SIZE;
+                            y3 = y;
+                        }
+
+                        else if(direction == 'D')
+                        {
+                            x3 = x;
+                            y3 = y + UNIT_SIZE;
+
+                        }
+
+                        else if (direction == 'L')
+                        {
+                            x3 = x - UNIT_SIZE;
+                            y3 = y;
+
+
+                        }
+
+                        else if (direction  == 'U')
+                        {
+
+                            x3 = x;
+                            y3 = y - UNIT_SIZE;
+
+                        }
+
+                        //System.out.println("X2 VAL = " + x2 + "Y2 VAL = " + y2);
+                        if (!checkCollision(x3,y3))
+                        {
+                            if(direction == 'R')
+                            {
+                                //limit it to x tiles only then go back if theres no gold
+                                for(int i = 0; i < numtiles; i++)
+                                {
+                                    move();
+
+                                    repaint();
+                                    if (board.getBox(y/UNIT_SIZE, x/UNIT_SIZE).getState() == 'G')
+                                    {
+                                        System.out.println("GOLD FOUND!");
+                                        running = false;
+                                        timer.stop();
+                                    }
+
+                                }
+
+                                // if didnt encounter any gold
+
+                                while(direction != 'L')
+                                    rotate();
+
+                                // move until back to previous position
+                                for(int j = 0; j < numtiles; j++)
+                                {
+                                    move();
+                                    repaint();
+
+                                }
+
+
+                            }
+
+                            if(direction == 'D')
+                            {
+                                //limit it to x tiles only then go back if theres no gold
+                                for(int i = 0; i < numtiles; i++)
+                                {
+                                    move();
+
+                                    repaint();
+                                    if (board.getBox(y/UNIT_SIZE, x/UNIT_SIZE).getState() == 'G')
+                                    {
+                                        System.out.println("GOLD FOUND!");
+                                        running = false;
+                                        timer.stop();
+                                    }
+
+                                }
+
+                                // if didnt encounter any gold
+
+                                while(direction != 'U')
+                                    rotate();
+
+                                // move until back to previous position
+                                for(int j = 0; j < numtiles; j++)
+                                {
+
+                                    repaint();
+                                    move();
+                                }
+
+                            }
+
+
+                            if(direction == 'L')
+                            {
+                                //limit it to x tiles only then go back if theres no gold
+                                for(int i = 0; i < numtiles; i++)
+                                {
+                                    move();
+
+                                    repaint();
+                                    if (board.getBox(y/UNIT_SIZE, x/UNIT_SIZE).getState() == 'G')
+                                    {
+                                        System.out.println("GOLD FOUND!");
+                                        running = false;
+                                        timer.stop();
+                                    }
+
+                                }
+
+                                // if didnt encounter any gold
+
+                                while(direction != 'R')
+                                    rotate();
+
+                                // move until back to previous position
+                                for(int j = 0; j < numtiles; j++)
+                                {
+                                    repaint();
+                                    move();
+
+                                }
+
+                            }
+
+                            if(direction == 'U')
+                            {
+                                //limit it to x tiles only then go back if theres no gold
+                                for(int i = 0; i < numtiles; i++)
+                                {
+                                    move();
+
+                                    repaint();
+                                    if (board.getBox(y/UNIT_SIZE, x/UNIT_SIZE).getState() == 'G')
+                                    {
+                                        System.out.println("GOLD FOUND!");
+                                        running = false;
+                                        timer.stop();
+                                    }
+
+                                }
+
+                                // if didnt encounter any gold
+
+                                while(direction != 'D')
+                                    rotate();
+
+                                // move until back to previous position
+                                for(int j = 0; j < numtiles; j++)
+                                {
+                                    repaint();
+                                    move();
+
+                                }
+                            }
+                        }
+
+
+
+
+
+
+                    }
+
+
+
+
+
+                }
+
+
+            }
+
+
+
 
             if (b.getState( ) == 'G' || b.getState() == 'P')
             {
