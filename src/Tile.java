@@ -4,6 +4,7 @@ public class Tile {
     private int y;
     private char state;
     private boolean scanned;
+    private boolean visited;
 
     /*
     state
@@ -18,6 +19,7 @@ public class Tile {
     {
         this.x = a;
         this.y = b;
+        this.visited = false;
         this.scanned = false;
     }
 
@@ -42,6 +44,8 @@ public class Tile {
         this.scanned = a;
     }
 
+    public void setVisited(boolean v){ this.visited = v;}
+
     public int getX ()
     {
         return this.x;
@@ -62,6 +66,8 @@ public class Tile {
     {
         return this.scanned;
     }
+
+    public boolean getVisited(){return this.visited;}
 
 
 }

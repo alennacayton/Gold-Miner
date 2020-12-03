@@ -1,21 +1,24 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 
 public class GamePanel extends JPanel implements ActionListener{
 
     static int SCREEN_WIDTH = 600;
     static int SCREEN_HEIGHT = 600;
-    static int n = 5;
+    static int n;
 
-    static int mod = 600 % n;
+    static int mod;
 
 
 
-    static int UNIT_SIZE = (600 - mod)/n;
+    static int UNIT_SIZE;
 
     static int DELAY = 600;
 
@@ -34,17 +37,27 @@ public class GamePanel extends JPanel implements ActionListener{
     int rotates = 0;
     int scans = 0;
 
-    int pitX;
-    int pitY;
+   ArrayList<Integer> pitX = new ArrayList<Integer>();
+    ArrayList<Integer> pitY = new ArrayList<Integer>();
+
 
     int goldX;
     int goldY;
 
-    static Board board = new Board(n, UNIT_SIZE);
+    ArrayList<Integer> beaconX = new ArrayList<Integer>();
+    ArrayList<Integer> beaconY= new ArrayList<Integer>();
+
+
+
+    static Board board;
 
     GamePanel(){
 
+        importFiles();
+
+
         System.out.println("UNIT SIZE --" + UNIT_SIZE);
+        System.out.println(n);
 
         if (mod != 0){
             SCREEN_WIDTH = 600 - mod;
@@ -62,6 +75,7 @@ public class GamePanel extends JPanel implements ActionListener{
         this.addKeyListener(new MyKeyAdapter());
         startGame();
     }
+
 
     public class Move{
 
@@ -97,11 +111,146 @@ public class GamePanel extends JPanel implements ActionListener{
 
     }
 
+    public void importFiles(){
+
+
+
+
+        /*
+        TEXT FILE FORMAT
+
+        <GRID_SIZE><newline>
+        <GOLD_X>,<GOLD_Y><newline>
+        <space>
+        <BEACON_X_n1>,<BEACON_Y_n1><newline>
+        .
+        .
+        .
+       <BEACON_X_n>,<BEACON_Y_n><newline>
+       <space>
+       <PIT_X_n1>,<PIT_Y_n1><newline>
+        .
+        .
+        .
+       <PIT_X_n>,<PIT_Y_n>
+       <eof>
+         */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        File inputFile;
+
+        try {
+            inputFile = new File("input.txt");
+            Scanner reader = new Scanner(inputFile);
+            while (reader.hasNext()) {
+
+                String size = reader.next();
+                n = Integer.parseInt(size);
+
+
+                mod = 600 % n;
+                UNIT_SIZE = (600 - mod)/n;
+                board = new Board(n, UNIT_SIZE);
+
+
+
+                reader.nextLine();
+
+                String[] goldXY = reader.nextLine().split(",");
+
+
+                goldX = board.getBox(Integer.parseInt(goldXY[0]), Integer.parseInt(goldXY[1])).getX();
+                goldY = board.getBox(Integer.parseInt(goldXY[0]), Integer.parseInt(goldXY[1])).getY();
+
+                System.out.println(goldX + "  GOOLD  " + goldY);
+                board.getBox(Integer.parseInt(goldXY[0]), Integer.parseInt(goldXY[1])).setState('G');
+
+
+                    reader.nextLine();
+
+                    String line;
+
+                    // reading beacon coordinates
+
+                    while (reader.hasNext() && (line = reader.nextLine()).length() != 0)
+                    {
+
+                        String[] temp = line.split(",");
+
+                        System.out.println(temp[0] + " " + temp[1]);
+
+                        beaconX.add(Integer.parseInt(temp[0]));
+                        beaconY.add(Integer.parseInt(temp[1]));
+
+                        board.getBox(Integer.parseInt(temp[0]), Integer.parseInt(temp[1])).setState('B');
+
+
+                    }
+
+        // reading pit coordinates
+                String line2;
+                System.out.println("yyeeet");
+                while (reader.hasNext() && (line2 = reader.nextLine()).length() != 0)
+                {
+
+
+                    String[] temp = line2.split(",");
+
+                    System.out.println(temp[0] + " " + temp[1]);
+
+                    pitX.add(Integer.parseInt(temp[0]));
+                    pitY.add(Integer.parseInt(temp[1]));
+
+                    board.getBox(Integer.parseInt(temp[0]), Integer.parseInt(temp[1])).setState('P');
+                }
+
+
+
+
+
+
+            }
+            reader.close();
+
+        } catch (FileNotFoundException ex) {
+            System.out.println("File does not exist! ");
+            System.out.println(ex.getMessage());
+            //System.exit(1);
+
+        }
+
+
+
+
+
+
+    }
+
 
     public void startGame() {
 
-        addPits();
-        addGold();
+      //  addPits();
+       // addBeacons();
+        //addGold();
         running = true;
         timer = new Timer(DELAY,this);
         timer.start();
@@ -125,15 +274,34 @@ public class GamePanel extends JPanel implements ActionListener{
 			}
 
 
+    // drawing pits
 
-            g.setColor(Color.white);
-            g.fillOval(pitX, pitY, UNIT_SIZE, UNIT_SIZE);
+            for(int p = 0; p < pitX.size(); p++)
+            {
 
+                g.setColor(Color.white);
+                g.fillOval(pitY.get(p) * UNIT_SIZE, pitX.get(p) * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+            //     System.out.println("PITS X = " + pitX.get(p) + " Y = " + pitY.get(p));
+
+            }
+
+    // drawing gold
             g.setColor(Color.yellow);
             g.fillOval(goldX, goldY, UNIT_SIZE, UNIT_SIZE);
 
+    // drawing beacons
 
+            for(int b = 0; b < beaconX.size(); b++)
+            {
 
+                g.setColor(Color.blue);
+                g.fillOval(beaconY.get(b) * UNIT_SIZE, beaconX.get(b) * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+
+            //    System.out.println("BEACONS X = " + beaconX.get(b) + " Y = " + beaconY.get(b));
+
+            }
+
+    // miner
             g.setColor(Color.green);
             g.fillRect(x, y, UNIT_SIZE, UNIT_SIZE);
 
@@ -145,19 +313,16 @@ public class GamePanel extends JPanel implements ActionListener{
         }
 
     }
+/*
+    public void addBeacons(){
 
-  /*
-    public void newApple(){
-    //    appleX = random.nextInt((SCREEN_WIDTH/UNIT_SIZE))*UNIT_SIZE;
-      //    appleY = random.nextInt((SCREEN_HEIGHT/UNIT_SIZE))*UNIT_SIZE;
-
-        appleX = board.getBox(2,3).getX();
-        appleY = board.getBox(2,3).getY();
+        beaconX = board.getBox(0,1).getX();
+        beaconY = board.getBox(0,1).getY();
+        board.getBox(0,1).setState('P');
+        System.out.println("BEACON X = " + beaconX + "BEACON Y = "  + beaconY);
+        System.out.println("BACON STATE = " + board.getBox(0  ,1).getState());
 
     }
-
-
-    */
 
 
     public void addPits(){
@@ -170,7 +335,7 @@ public class GamePanel extends JPanel implements ActionListener{
         System.out.println("PIT STATE = " + board.getBox(0  ,1).getState());
 
     }
-
+*/
 
     public void addGold(){
 
@@ -188,9 +353,12 @@ public class GamePanel extends JPanel implements ActionListener{
 
     public void move(){
 
-
+        int col = x/ UNIT_SIZE;
+        int row = y/ UNIT_SIZE;
         System.out.println("x == " + x + " y == " + y);
 
+        board.getBox(row,col).setVisited(true);
+        System.out.println("SET VISITED TO TRUE FOR ROW AND COL : " + row + " " + col);
 
         switch(direction) {
             case 'U':
@@ -212,6 +380,39 @@ public class GamePanel extends JPanel implements ActionListener{
         movesnum += 1;
 
 
+    }
+
+
+    public int beacon(int rowPos, int colPos)
+    {
+        int row = 0;
+        int col = 0;
+
+    // check all four directions for gold except for position //
+
+        // check above
+
+        while(row != -1 )
+        {
+            row = rowPos - 1;
+            col = colPos;
+
+
+            if(board.getBox(row,col).getState() == 'G')
+            {
+
+            }
+
+
+
+        }
+
+
+
+
+
+
+        return 0;
     }
 
 
@@ -296,27 +497,52 @@ public class GamePanel extends JPanel implements ActionListener{
 
 
 
+        //declaring a temporary array for visited moves already
 
+        ArrayList<Move> temp = new ArrayList<Move>();
+        Move e,r;
+        int firstEmpty = -1; // index of the first empty tile//
+
+
+
+        System.out.println("    WITHOUT CONDITIONAL STATEMENTS");
+        for(int i = 0; i < moves.size(); i++)
+        {
+            System.out.println("INDEX " + i );
+            if(board.getBox( moves.get(i).getRow(),  moves.get(i).getCol()).getVisited())
+            System.out.println("    ROW = " + moves.get(i).getRow() + " COL = " + moves.get(i).getCol() + " VISITED");
+
+            else
+                System.out.println("    ROW = " + moves.get(i).getRow() + " COL = " + moves.get(i).getCol() + " NOT VISITED");
+        }
+
+
+        // this loop separates the visited tiles from the unvisited ones
+        System.out.println("CONTENT OF ARRAY MOVE BEFORE SPLITTING");
+        System.out.println("SIZE OF MOVE: " + moves.size());
         for (int i = 0; i < moves.size(); i++)
         {
-            if(moves.get(i).getState() == 'G')
+            System.out.println(" ROW : " + moves.get(i).getRow() + " COLUMN : "+ moves.get(i).getCol());
+
+
+            if(board.getBox(moves.get(i).getRow(),moves.get(i).getCol()).getVisited())
             {
-                return moves.get(i);
+
+
+                e = new Move(moves.get(i).getRow(),moves.get(i).getCol(),moves.get(i).getState());
+                temp.add(e);
+             //   System.out.println(" INDEX i : " + i);
+            //    System.out.println("  REMOVED " + moves.get(i).getRow() + "  " + moves.get(i).getCol());
+
+
+             //   moves.remove(i);
+
             }
 
-            if(moves.get(i).getState() == 'B')
-            {
-                return moves.get(i);
-            }
-
-            if(moves.get(i).getState() == 'P')
-            {
+            else{
+                System.out.println(" INDEX i : " + i);
                 continue;
-            }
 
-            if(moves.get(i).getState() == '*')
-            {
-                continue;
             }
 
 
@@ -325,15 +551,102 @@ public class GamePanel extends JPanel implements ActionListener{
 
         for (int i = 0; i < moves.size(); i++)
         {
-            if(moves.get(i).getState() == '*')
-                return moves.get(i);
+            for( int j = 0; j < temp.size(); j++)
+            {
+                if(moves.get(i).getRow() == temp.get(j).getRow() && moves.get(i).getCol() == temp.get(j).getCol())
+                    moves.remove(i);
 
+            }
         }
 
 
 
 
-        return moves.get(0);
+
+
+        System.out.println("FIRST ARRAY BEING SEARCHED/ UNVISITED TILES");
+
+        for(int a = 0; a < moves.size(); a++){
+
+            System.out.print(moves.get(a).getRow() + " " + moves.get(a).getCol());
+            System.out.println(" VISITED?? " + board.getBox(moves.get(a).getRow(),moves.get(a).getCol()).getVisited());
+        }
+
+
+        System.out.println("SECOND ARRAY BEING SEARCHED/ VISITED");
+
+        for(int b = 0; b < temp.size(); b++){
+
+            System.out.println(temp.get(b).getRow() + " " + temp.get(b).getCol());
+            System.out.println("VISITED?? " + board.getBox(temp.get(b).getRow(),temp.get(b).getCol()).getVisited());
+        }
+
+
+        for(int j = 0; j < moves.size(); j++)
+        {
+            if(moves.get(j).getState() == 'G')
+            {
+                return moves.get(j);
+            }
+
+            if(moves.get(j).getState() == 'B')
+            {
+                return moves.get(j);
+            }
+
+            if(moves.get(j).getState() == 'P')
+            {
+                continue;
+            }
+
+            if (moves.get(j).getState() == '*')
+            {
+                if(firstEmpty == -1)
+                    firstEmpty = j;
+                else
+                    continue;
+
+            }
+        }
+
+
+        if(firstEmpty != -1)
+        return moves.get(firstEmpty);
+
+        else{
+
+            for(int x = 0; x < temp.size(); x++)
+            {
+                if(temp.get(x).getState() == 'G')
+                {
+                    return temp.get(x);
+                }
+
+                if(temp.get(x).getState() == 'B')
+                {
+                    return temp.get(x);
+                }
+
+                if(temp.get(x).getState() == 'P')
+                {
+                    continue;
+                }
+
+                if (temp.get(x).getState() == '*')
+                {
+                    return temp.get(x);
+
+                }
+
+            }
+
+
+        }
+
+
+
+        return temp.get(0);
+
 
 
 
@@ -487,14 +800,13 @@ public class GamePanel extends JPanel implements ActionListener{
             //System.out.println("X2 VAL = " + x2 + "Y2 VAL = " + y2);
             if (!checkCollision(x2,y2))
             {
-
+                // getting the row and col equivalent of front being checked
                 int col = x2/ UNIT_SIZE;
                 int row = y2/ UNIT_SIZE;
 
                // System.out.println("ROW PASSED  = " + row + "COL PASSED  = " + col);
-                if(!board.getBox(row,col).getScanned())
-                {
-
+              //  if(!board.getBox(row,col).getScanned())
+            //    {
 
                     char state = board.getBox(row,col).getState(); /// this is scan //
                     System.out.println("SCANNED AREA :   ROW  = " + row + "COL = " + col + "STATE = " + state);
@@ -506,7 +818,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
                     moves.add(a);
 
-                }
+             //   }
 
 
             }
