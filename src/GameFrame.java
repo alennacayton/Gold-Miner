@@ -1,12 +1,13 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
 
 public class GameFrame extends JFrame {
 
-    GameFrame()
-    {
+    GameFrame() {
         /*
         BufferedImage img = ImageIO.read(new URL("apple.jpg"));
         ImageIcon icon = new ImageIcon(img);
@@ -21,6 +22,9 @@ public class GameFrame extends JFrame {
         this.pack();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+
+
+        this.setIconImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("pickaxe.png")));
 
     }
 }

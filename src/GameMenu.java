@@ -32,6 +32,8 @@ public class GameMenu extends JFrame implements MouseListener{
      //   menuPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
         this.setLocationRelativeTo(null);
 
+        this.setIconImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("pickaxe.png")));
+
 
 
         setContentPane(menuPanel);

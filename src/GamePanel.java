@@ -1,14 +1,19 @@
 import java.awt.*;
 import java.awt.event.*;
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
 
 public class GamePanel extends JPanel implements ActionListener{
+
+
 
     static int SCREEN_WIDTH = 600;
     static int SCREEN_HEIGHT = 600;
@@ -20,7 +25,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
     static int UNIT_SIZE;
 
-    static int DELAY = 600;
+    static int DELAY = 700;
 
 
     int x; // position of player in the board
@@ -51,7 +56,8 @@ public class GamePanel extends JPanel implements ActionListener{
 
     static Board board;
 
-    GamePanel(){
+    GamePanel()  {
+
 
         importFiles();
 
@@ -63,6 +69,8 @@ public class GamePanel extends JPanel implements ActionListener{
             SCREEN_WIDTH = 600 - mod;
             SCREEN_HEIGHT = 600 - mod;
         }
+
+
 
 
 
@@ -135,24 +143,6 @@ public class GamePanel extends JPanel implements ActionListener{
        <PIT_X_n>,<PIT_Y_n>
        <eof>
          */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -248,9 +238,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
     public void startGame() {
 
-      //  addPits();
-       // addBeacons();
-        //addGold();
+
         running = true;
         timer = new Timer(DELAY,this);
         timer.start();
@@ -258,16 +246,23 @@ public class GamePanel extends JPanel implements ActionListener{
 
 
     public void paintComponent(Graphics g) {
+
         super.paintComponent(g);
         draw(g);
+
+
+
     }
+
+
 
 
     public void draw(Graphics g) {
 
         if(running) {
 
-			for(int i=0;i<SCREEN_HEIGHT/UNIT_SIZE;i++) {
+
+            for(int i=0;i<SCREEN_HEIGHT/UNIT_SIZE;i++) {
 				g.drawLine(i* UNIT_SIZE, 0, i* UNIT_SIZE, SCREEN_HEIGHT);
 				g.drawLine(0, i* UNIT_SIZE, SCREEN_WIDTH, i* UNIT_SIZE);
 
@@ -275,35 +270,35 @@ public class GamePanel extends JPanel implements ActionListener{
 
 
     // drawing pits
-
             for(int p = 0; p < pitX.size(); p++)
             {
-
-                g.setColor(Color.white);
-                g.fillOval(pitY.get(p) * UNIT_SIZE, pitX.get(p) * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
-            //     System.out.println("PITS X = " + pitX.get(p) + " Y = " + pitY.get(p));
-
+                g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("hole.png")), pitY.get(p) * UNIT_SIZE ,pitX.get(p) * UNIT_SIZE,UNIT_SIZE,UNIT_SIZE, null);
             }
 
     // drawing gold
-            g.setColor(Color.yellow);
-            g.fillOval(goldX, goldY, UNIT_SIZE, UNIT_SIZE);
+            g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("treasure.png")), goldX,goldY,UNIT_SIZE,UNIT_SIZE, null);
 
-    // drawing beacons
+     // drawing beacons
 
             for(int b = 0; b < beaconX.size(); b++)
             {
+                g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("lighthouse.png")), beaconY.get(b) * UNIT_SIZE,beaconX.get(b) * UNIT_SIZE,UNIT_SIZE,UNIT_SIZE, null);
 
-                g.setColor(Color.blue);
-                g.fillOval(beaconY.get(b) * UNIT_SIZE, beaconX.get(b) * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+              //  g.setColor(Color.blue);
+            //    g.fillOval(beaconY.get(b) * UNIT_SIZE, beaconX.get(b) * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
 
             //    System.out.println("BEACONS X = " + beaconX.get(b) + " Y = " + beaconY.get(b));
 
             }
 
     // miner
-            g.setColor(Color.green);
-            g.fillRect(x, y, UNIT_SIZE, UNIT_SIZE);
+         //     g.setColor(Color.green);
+         //   g.fillRect(x, y, UNIT_SIZE, UNIT_SIZE);
+
+
+            g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("gnome.png")), x,y,UNIT_SIZE,UNIT_SIZE, null);
+
+
 
 
 
@@ -311,40 +306,6 @@ public class GamePanel extends JPanel implements ActionListener{
         else {
             gameOver(g);
         }
-
-    }
-/*
-    public void addBeacons(){
-
-        beaconX = board.getBox(0,1).getX();
-        beaconY = board.getBox(0,1).getY();
-        board.getBox(0,1).setState('P');
-        System.out.println("BEACON X = " + beaconX + "BEACON Y = "  + beaconY);
-        System.out.println("BACON STATE = " + board.getBox(0  ,1).getState());
-
-    }
-
-
-    public void addPits(){
-
-
-        pitX = board.getBox(0,1).getX();
-        pitY = board.getBox(0,1).getY();
-        board.getBox(0,1).setState('P');
-        System.out.println("PIT X = " + pitX + "PIT Y = "  + pitY);
-        System.out.println("PIT STATE = " + board.getBox(0  ,1).getState());
-
-    }
-*/
-
-    public void addGold(){
-
-
-        goldX = board.getBox(2,2).getX();
-        goldY = board.getBox(2,2).getY();
-        board.getBox(2,2).setState('G');
-        System.out.println("GOLD X = " + goldX + "GOLD Y = "  + goldY);
-        System.out.println("GOLD STATE = " + board.getBox(2  ,2).getState());
 
     }
 
@@ -432,49 +393,13 @@ public class GamePanel extends JPanel implements ActionListener{
 
     }
 
-// convert x and y to coordinates
+
     public char scan(int row, int col){
 
        // System.out.println("Scanning.. row = " + row + " col = "+ col);
         scans += 1;
 
-     //   return board.getBox(row,col).getState();
-
-
-        if (direction == 'R')
-        {
-          //  System.out.println(board.getBox(row , col + 1).getX() + " " + board.getBox(row , col + 1).getY());
-          //  System.out.println(board.getBox(row , col + 1).getState());
-            return board.getBox(row , col + 1).getState();
-        }
-
-
-        else if(direction == 'D')
-        {
-          //  System.out.println(board.getBox(row + 1, col ).getX() + " " + board.getBox(row + 1, col ).getY());
-         //   System.out.println(board.getBox(row + 1, col).getState());
-            return board.getBox(row + 1, col).getState();
-        }
-
-
-        else if (direction == 'L')
-        {
-          //  System.out.println(board.getBox(row , col - 1).getX() + " " + board.getBox(row , col - 1).getY());
-          //  System.out.println(board.getBox(row, col - 1).getState());
-            return board.getBox(row, col - 1).getState();
-        }
-
-
-        else if (direction  == 'U')
-        {
-          //  System.out.println(board.getBox(row - 1, col ).getX() + " " + board.getBox(row - 1, col ).getY());
-         //   System.out.println(board.getBox(row - 1, col).getState());
-            return board.getBox(row - 1, col).getState();
-        }
-
-
-        return 'X';
-
+       return board.getBox(row,col).getState();
 
 
     }
@@ -698,24 +623,6 @@ public class GamePanel extends JPanel implements ActionListener{
         FontMetrics metrics2 = getFontMetrics(g.getFont());
         g.drawString("Game Over", ((int)SCREEN_WIDTH - metrics2.stringWidth("Game Over"))/2, (int)SCREEN_HEIGHT/2);
     }
-/*
-    public void generateRandom()
-    {
-        int p = random.nextInt();
-
-        if (moves == 1)
-            direction = 'U';
-        else if (moves == 2)
-            direction = 'R';
-        else if (moves == 3)
-            direction = 'L';
-        else if (moves == 4)
-            direction = 'D';
-
-
-    }
-
-*/
 
 
     public boolean checkFront(int row, int col)
@@ -752,13 +659,10 @@ public class GamePanel extends JPanel implements ActionListener{
     public void actionPerformed(ActionEvent e) {
 
 
-
-
         if(running) {
 
                 // x and  y position of miner
                 // x2 and y2 position being checked
-
 
             ArrayList<Move> moves = new ArrayList<Move>();
             Move a,b;
@@ -808,8 +712,10 @@ public class GamePanel extends JPanel implements ActionListener{
               //  if(!board.getBox(row,col).getScanned())
             //    {
 
-                    char state = board.getBox(row,col).getState(); /// this is scan //
-                    System.out.println("SCANNED AREA :   ROW  = " + row + "COL = " + col + "STATE = " + state);
+               //     char state = board.getBox(row,col).getState(); /// this is scan //
+
+                        char state =  scan(row,col);
+                        System.out.println("SCANNED AREA :   ROW  = " + row + "COL = " + col + "STATE = " + state);
 
                     board.getBox(row,col).setScanned(true);  // marking it as scanned;
 
@@ -847,19 +753,21 @@ public class GamePanel extends JPanel implements ActionListener{
 
             if (b.getState( ) == 'G' || b.getState() == 'P')
             {
+                System.out.println("FINAL VAL OF X AND Y = " + x + "   " + y);
+                System.out.println("TOTAL ROTATES = " + rotates);
+                System.out.println("TOTAL SCANS = " + scans);
+                System.out.println("TOTAL MOVES = " + movesnum );
+
 
                 running = false;
                 timer.stop();
 
             }
 
-/*
-            System.out.println("FINAL VAL OF X AND Y = " + x + "   " + y);
-            System.out.println("ROTATES = " + rotates);
-            System.out.println("SCANS = " + scans);
-            System.out.println("MOVES = " + movesnum );
 
-*/
+
+
+
 
 
 
