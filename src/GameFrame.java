@@ -7,16 +7,11 @@ import java.net.URL;
 
 public class GameFrame extends JFrame {
 
-    GameFrame() {
-        /*
-        BufferedImage img = ImageIO.read(new URL("apple.jpg"));
-        ImageIcon icon = new ImageIcon(img);
-        JLabel label = new JLabel(icon);
-*/
+    GameFrame(int agent) {
 
-        this.add(new GamePanel());
+        this.add(new GamePanel(agent));
+
         this.setTitle("Gold Miner");
-       // this.add(label);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.pack();

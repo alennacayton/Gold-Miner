@@ -19,46 +19,48 @@ public class GamePanel extends JPanel implements ActionListener{
     static int SCREEN_WIDTH = 600;
     static int SCREEN_HEIGHT = 600;
     static int n;
-
     static int mod;
 
-
-
     static int UNIT_SIZE;
-
     static int DELAY = 700;
 
 
-    int x; // position of player in the board
-    int y;
+    static int agent = -1;
+
+    static int x  = 0; // position of player in the board
+    static int y = 0;
 
 
-
-    char direction = 'R';
-    boolean running = false;
+    static char direction = 'R';
+    static boolean running = false;
     Timer timer;
     Random random;
 
-    int movesnum = 0;
-    int rotates = 0;
-    int scans = 0;
-
-   ArrayList<Integer> pitX = new ArrayList<Integer>();
-    ArrayList<Integer> pitY = new ArrayList<Integer>();
+    static int movesnum = 0;
+    static int rotates = 0;
+    static int scans = 0;
 
 
-    int goldX;
-    int goldY;
+    static int goldX;
+    static int goldY;
+
 
     ArrayList<Integer> beaconX = new ArrayList<Integer>();
     ArrayList<Integer> beaconY= new ArrayList<Integer>();
 
 
+    ArrayList<Integer> pitX = new ArrayList<Integer>();
+    ArrayList<Integer> pitY = new ArrayList<Integer>();
+
+
 
     static Board board;
 
-    GamePanel()  {
+    GamePanel(int a) {
+        // smart agent = 1
+        // random agent = 0
 
+        agent = a;
 
         importFiles();
 
@@ -72,16 +74,12 @@ public class GamePanel extends JPanel implements ActionListener{
         }
 
 
-
-
-
       //  board.displayBoard();
 
         random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH,SCREEN_HEIGHT));
         this.setBackground(Color.black);
         this.setFocusable(true);
-        this.addKeyListener(new MyKeyAdapter());
         startGame();
     }
 
@@ -103,27 +101,19 @@ public class GamePanel extends JPanel implements ActionListener{
         {
             return row;
         }
-
-
         public int getCol()
         {
             return col;
         }
-
         public char getState()
         {
             return state;
         }
 
 
-
-
     }
 
     public void importFiles(){
-
-
-
 
         /*
         TEXT FILE FORMAT
@@ -144,8 +134,6 @@ public class GamePanel extends JPanel implements ActionListener{
        <PIT_X_n>,<PIT_Y_n>
        <eof>
          */
-
-
 
         File inputFile;
 
@@ -189,17 +177,23 @@ public class GamePanel extends JPanel implements ActionListener{
 
                         System.out.println(temp[0] + " " + temp[1]);
 
-                        beaconX.add(Integer.parseInt(temp[0]));
-                        beaconY.add(Integer.parseInt(temp[1]));
+                        if(Integer.parseInt(temp[0]) != -1 && Integer.parseInt(temp[1]) != -1)
+                        {
 
-                        board.getBox(Integer.parseInt(temp[0]), Integer.parseInt(temp[1])).setState('B');
+                            beaconX.add(Integer.parseInt(temp[0]));
+                            beaconY.add(Integer.parseInt(temp[1]));
+
+                            board.getBox(Integer.parseInt(temp[0]), Integer.parseInt(temp[1])).setState('B');
+
+                        }
+
 
 
                     }
 
         // reading pit coordinates
                 String line2;
-                System.out.println("yyeeet");
+
                 while (reader.hasNext() && (line2 = reader.nextLine()).length() != 0)
                 {
 
@@ -208,10 +202,14 @@ public class GamePanel extends JPanel implements ActionListener{
 
                     System.out.println(temp[0] + " " + temp[1]);
 
-                    pitX.add(Integer.parseInt(temp[0]));
-                    pitY.add(Integer.parseInt(temp[1]));
+                    if(Integer.parseInt(temp[0]) != -1 && Integer.parseInt(temp[1]) != -1)
+                    {
+                        pitX.add(Integer.parseInt(temp[0]));
+                        pitY.add(Integer.parseInt(temp[1]));
 
-                    board.getBox(Integer.parseInt(temp[0]), Integer.parseInt(temp[1])).setState('P');
+                        board.getBox(Integer.parseInt(temp[0]), Integer.parseInt(temp[1])).setState('P');
+                    }
+
                 }
 
 
@@ -231,9 +229,6 @@ public class GamePanel extends JPanel implements ActionListener{
 
 
 
-
-
-
     }
 
 
@@ -247,21 +242,40 @@ public class GamePanel extends JPanel implements ActionListener{
 
 
     public void paintComponent(Graphics g) {
+        System.out.println("            INSIDE PAINT COMPONENT");
 
         super.paintComponent(g);
-        draw(g);
+        try {
+            draw(g);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    /*
+     function retrieved from:
+     https://stackoverflow.com/questions/22426040/error-sun-awt-image-toolkitimage-cannot-be-cast-to-java-awt-image-bufferedimage
 
-
+     */
+    public static BufferedImage convertToARGB(BufferedImage image)
+    {
+        BufferedImage newImage = new BufferedImage(
+                image.getWidth(), image.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = newImage.createGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+        return newImage;
     }
 
 
 
+    public void draw(Graphics g) throws IOException {
 
-    public void draw(Graphics g) {
 
+       BufferedImage toPaintMiner = convertToARGB(ImageIO.read(ClassLoader.getSystemResource("miner.png")));
+//(BufferedImage)Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("miner.png"))
         if(running) {
-
 
             for(int i=0;i<SCREEN_HEIGHT/UNIT_SIZE;i++) {
 				g.drawLine(i* UNIT_SIZE, 0, i* UNIT_SIZE, SCREEN_HEIGHT);
@@ -269,35 +283,32 @@ public class GamePanel extends JPanel implements ActionListener{
 
 			}
 
-
     // drawing pits
             for(int p = 0; p < pitX.size(); p++)
             {
-                g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("hole.png")), pitY.get(p) * UNIT_SIZE ,pitX.get(p) * UNIT_SIZE,UNIT_SIZE,UNIT_SIZE, null);
+                g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("hole.png")), pitY.get(p) * UNIT_SIZE ,pitX.get(p) * UNIT_SIZE,UNIT_SIZE ,UNIT_SIZE , null);
             }
 
     // drawing gold
-            g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("treasure.png")), goldX,goldY,UNIT_SIZE,UNIT_SIZE, null);
+            g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("treasure.png")), goldX ,goldY,UNIT_SIZE  ,UNIT_SIZE  , null);
 
      // drawing beacons
 
             for(int b = 0; b < beaconX.size(); b++)
             {
-                g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("lighthouse.png")), beaconY.get(b) * UNIT_SIZE,beaconX.get(b) * UNIT_SIZE,UNIT_SIZE,UNIT_SIZE, null);
+                g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("lighthouse.png")), beaconY.get(b) * UNIT_SIZE,beaconX.get(b) * UNIT_SIZE ,UNIT_SIZE ,UNIT_SIZE , null);
 
               //  g.setColor(Color.blue);
-            //    g.fillOval(beaconY.get(b) * UNIT_SIZE, beaconX.get(b) * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+             //   g.fillOval(beaconY.get(b) * UNIT_SIZE, beaconX.get(b) * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
 
             //    System.out.println("BEACONS X = " + beaconX.get(b) + " Y = " + beaconY.get(b));
 
             }
 
     // miner
-         //     g.setColor(Color.green);
-         //   g.fillRect(x, y, UNIT_SIZE, UNIT_SIZE);
 
-
-            g.drawImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("gnome.png")), x,y,UNIT_SIZE,UNIT_SIZE, null);
+            System.out.println("                                        INSIDE DRAW x = " + x + " y = " + y);
+            g.drawImage(toPaintMiner, x,y,UNIT_SIZE,UNIT_SIZE, null);
 
 
 
@@ -305,7 +316,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
         }
         else {
-            gameOver(g);
+            goldFound(g);
         }
 
     }
@@ -317,9 +328,10 @@ public class GamePanel extends JPanel implements ActionListener{
 
         int col = x/ UNIT_SIZE;
         int row = y/ UNIT_SIZE;
-        System.out.println("x == " + x + " y == " + y);
+      //  System.out.println("x == " + x + " y == " + y);
 
         board.getBox(row,col).setVisited(true);
+        board.displayBoard(x,y, UNIT_SIZE);
       //  System.out.println("SET VISITED TO TRUE FOR ROW AND COL : " + row + " " + col);
 
         switch(direction) {
@@ -337,9 +349,13 @@ public class GamePanel extends JPanel implements ActionListener{
                 break;
         }
 
-        System.out.println("MINER MOVED TO  X = " + x + " Y = " + y);
+        System.out.println("MINER MOVED TO  ROW = " + y/UNIT_SIZE + " COL = " + x/UNIT_SIZE);
+
+
 
         movesnum += 1;
+
+
 
 
     }
@@ -361,8 +377,6 @@ public class GamePanel extends JPanel implements ActionListener{
             case 'U': check = 4; break;
             default: break;
         }
-
-
 
         for(int x = 0; x < 4; x++)
         {
@@ -402,25 +416,23 @@ public class GamePanel extends JPanel implements ActionListener{
                 // check all four directions for first occurrence of any entity aside from a blank tile
                 if (check == 1)
                 {
-                    System.out.println("ENTERED RIGHT");
+                   // System.out.println("ENTERED RIGHT");
 
                     for(int i = col + 1; i < n; i++)
                     {
-                        System.out.println("hello");
+                       // System.out.println("hello");
                         count += 1;
 
                         if(board.getBox(row,i).getState() == 'G')
                             return count;
                         if(board.getBox(row,i).getState() == 'P')
                         {
-                            System.out.println("entered state p");
+                          //  System.out.println("entered state p");
                             return 0;
                         }
 
 
-
                     }
-
 
                     // row2 = row
                     //  col2 = col + 1
@@ -428,18 +440,14 @@ public class GamePanel extends JPanel implements ActionListener{
 
                 else if(check == 2)
                 {
-                    System.out.println("ENTERED DOWN");
-
-
+                    //System.out.println("ENTERED DOWN");
                     for(int i = row + 1; i < n; i++)
                     {
                         count += 1;
-
                         if(board.getBox(i,col).getState() == 'G')
                             return count;
                         if(board.getBox(i,col).getState() == 'P')
                             return 0;
-
 
                     }
 
@@ -450,7 +458,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
                 else if (check == 3)
                 {
-                    System.out.println("ENTERED LEFT");
+                    //System.out.println("ENTERED LEFT");
 
                     for(int i = col - 1; i > n; i--)
                     {
@@ -461,9 +469,7 @@ public class GamePanel extends JPanel implements ActionListener{
                         if(board.getBox(row,i).getState() == 'P')
                             return 0;
 
-
                     }
-
 
                     //  row2 = row
                     // col2 = col - 1
@@ -473,17 +479,15 @@ public class GamePanel extends JPanel implements ActionListener{
 
                 else if (check  == 4)
                 {
-                    System.out.println("ENTERED UP");
+                    //System.out.println("ENTERED UP");
 
                     for(int i = row - 1; i > n; i--)
                     {
                         count += 1;
-
                         if(board.getBox(i,col).getState() == 'G')
                             return count;
                         if(board.getBox(i,col).getState() == 'P')
                             return 0;
-
 
                     }
 
@@ -510,7 +514,8 @@ public class GamePanel extends JPanel implements ActionListener{
     }
 
 
-    public void rotate(){
+    public void rotate()
+    {
 
         if (direction == 'R')
             direction = 'D';
@@ -523,11 +528,13 @@ public class GamePanel extends JPanel implements ActionListener{
 
         rotates += 1;
 
+        System.out.println("ROTATED TO " + direction);
 
     }
 
 
-    public char scan(int row, int col){
+    public char scan(int row, int col)
+    {
 
        // System.out.println("Scanning.. row = " + row + " col = "+ col);
         scans += 1;
@@ -539,7 +546,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
     // this method returns the row and col of the ideal move
 
-    public Move selectMove(ArrayList<Move> moves)
+    public Move selectSmartMove(ArrayList<Move> moves)
     {
        // check for the gold
         // if theres gold return move
@@ -548,19 +555,18 @@ public class GamePanel extends JPanel implements ActionListener{
 
         //check for pits
         // if theres a pit return the nearest coordinates of
-
+/*
         for(int j = 0; j < moves.size(); j++){
             System.out.println("    SELECTION MOVES ROW = " + moves.get(j).getRow() + " MOVE COL = " + moves.get(j).getCol() + " MOVE STATE = " + moves.get(j).getState());
         }
-
-
+*/
 
         //declaring a temporary array for visited moves already
 
         ArrayList<Move> temp = new ArrayList<Move>();
         Move e,r;
         int firstEmpty = -1; // index of the first empty tile//
-
+/*
 
 
         System.out.println("    WITHOUT CONDITIONAL STATEMENTS");
@@ -573,37 +579,29 @@ public class GamePanel extends JPanel implements ActionListener{
             else
                 System.out.println("    ROW = " + moves.get(i).getRow() + " COL = " + moves.get(i).getCol() + " NOT VISITED");
         }
-
+*/
 
         // this loop separates the visited tiles from the unvisited ones
-        System.out.println("CONTENT OF ARRAY MOVE BEFORE SPLITTING");
-        System.out.println("SIZE OF MOVE: " + moves.size());
+     //   System.out.println("CONTENT OF ARRAY MOVE BEFORE SPLITTING");
+       // System.out.println("SIZE OF MOVE: " + moves.size());
         for (int i = 0; i < moves.size(); i++)
         {
-            System.out.println(" ROW : " + moves.get(i).getRow() + " COLUMN : "+ moves.get(i).getCol());
+            //System.out.println(" ROW : " + moves.get(i).getRow() + " COLUMN : "+ moves.get(i).getCol());
 
 
             if(board.getBox(moves.get(i).getRow(),moves.get(i).getCol()).getVisited())
             {
-
-
                 e = new Move(moves.get(i).getRow(),moves.get(i).getCol(),moves.get(i).getState());
                 temp.add(e);
              //   System.out.println(" INDEX i : " + i);
             //    System.out.println("  REMOVED " + moves.get(i).getRow() + "  " + moves.get(i).getCol());
 
-
              //   moves.remove(i);
-
             }
 
             else{
-                System.out.println(" INDEX i : " + i);
                 continue;
-
             }
-
-
 
         }
 
@@ -620,7 +618,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
 
 
-
+/*
 
         System.out.println("FIRST ARRAY BEING SEARCHED/ UNVISITED TILES");
 
@@ -638,7 +636,7 @@ public class GamePanel extends JPanel implements ActionListener{
             System.out.println(temp.get(b).getRow() + " " + temp.get(b).getCol());
             System.out.println("VISITED?? " + board.getBox(temp.get(b).getRow(),temp.get(b).getCol()).getVisited());
         }
-
+*/
 
         for(int j = 0; j < moves.size(); j++)
         {
@@ -711,6 +709,31 @@ public class GamePanel extends JPanel implements ActionListener{
     }
 
 
+    public Move selectRandomMove(ArrayList<Move> moves)
+    {
+        int min = 0;
+        int max = moves.size() - 1;
+        int num = 0;
+
+
+
+        do{
+
+            num = random.nextInt(max - min + 1) + min;
+
+        } while(moves.get(num).getState() == 'P');
+
+        System.out.println("          RANDOM NUMBER " + num );
+        return moves.get(num);
+
+
+
+    }
+
+
+
+
+
 
 
 
@@ -748,14 +771,30 @@ public class GamePanel extends JPanel implements ActionListener{
 
     }
 
-    public void gameOver(Graphics g) {
+    public void goldFound(Graphics g) {
+
+
 
         //Game Over display
-        g.setColor(Color.red);
+        g.setColor(Color.yellow);
         g.setFont( new Font("Ink Free",Font.BOLD, 75));
         FontMetrics metrics2 = getFontMetrics(g.getFont());
-        g.drawString("Game Over", ((int)SCREEN_WIDTH - metrics2.stringWidth("Game Over"))/2, (int)SCREEN_HEIGHT/2);
+        g.drawString("Gold Found!", ((int)SCREEN_WIDTH - metrics2.stringWidth("Gold Found!"))/2, (int)SCREEN_HEIGHT/2 - 80);
+
+
+
+        g.setColor(Color.yellow);
+        g.setFont( new Font("Ink Free",Font.BOLD, 30));
+        FontMetrics metrics3 = getFontMetrics(g.getFont());
+
+        g.drawString("TOTAL MOVES: " + movesnum, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 10, (int)SCREEN_HEIGHT/2 + 75 - 80);
+        g.drawString("TOTAL ROTATES: " + rotates, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 40, (int)SCREEN_HEIGHT/2 + 120 - 80);
+        g.drawString("TOTAL SCANS: " + scans, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 10, (int)SCREEN_HEIGHT/2 + 165 - 80);
+
     }
+
+
+
 
 
     public boolean checkFront(int row, int col)
@@ -787,28 +826,245 @@ public class GamePanel extends JPanel implements ActionListener{
     }
 
 
+    // moves back one tile
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
+    public void moveBack()
+    {
+        System.out.println("entered MOVEBACK loop ");
+
+        System.out.println("DIRECTION BEFORE MOVING BACK " + direction);
+
+        if(direction == 'R')
+        {
+            while(direction != 'L')
+                rotate();
+        }
+
+        else if(direction == 'D')
+        {
+            while(direction != 'U')
+                rotate();
+        }
+
+        else if (direction == 'L')
+        {
+            while(direction != 'R')
+                rotate();
+        }
+
+        else if (direction == 'U')
+        {
+            while(direction != 'D')
+                rotate();
+        }
+
+        System.out.println("DIRECTION NOW IS " + direction);
 
 
-        if(running) {
 
-                // x and  y position of miner
-                // x2 and y2 position being checked
+        move();
 
-            ArrayList<Move> moves = new ArrayList<Move>();
-            Move a,b;
-            int x2 = 0, y2 = 0;
-            System.out.println("OUTSIDE LOOP");
+    }
+
+
+    public void enteredBeacon(Move b)
+    {
+
+
+        System.out.println("Inside beacon..");
+        int numtiles = beacon(b.getRow(), b.getCol());
+
+        System.out.println("GOLD IS " + numtiles + " tiles away!" );
+
+        // if gold is visible
+
+        int r = 0, d = 0, l = 0, u = 0;
+
+
+
+        if(numtiles != 0)
+        {
+            for(int j = 0; j < 4; j++)
+            {
+                int checkRow = 0;
+                int checkCol = 0;
+
+                if(direction == 'R')
+                {
+                    r = 1;
+                    checkRow = y/UNIT_SIZE;
+                    checkCol = x/UNIT_SIZE + 1;
+                }
+
+                if(direction == 'D')
+                {
+                    d = 1;
+                    checkRow = y/UNIT_SIZE + 1;
+                    checkCol = x/UNIT_SIZE;
+                }
+
+                if (direction == 'L')
+                {
+                    l = 1;
+                    checkRow = y/UNIT_SIZE;
+                    checkCol = x/UNIT_SIZE - 1;
+
+                }
+
+                if (direction == 'U')
+                {
+                    u = 1;
+                    checkRow = y/UNIT_SIZE - 1;
+                    checkCol = x/UNIT_SIZE;
+
+                }
+
+                if(!checkCollision(checkRow * UNIT_SIZE, checkCol * UNIT_SIZE))
+                {
+                    for(int i = 0; i < numtiles; i++)
+                    {
+
+                        if(!checkCollision(checkRow * UNIT_SIZE, checkCol * UNIT_SIZE))
+                        {
+                            System.out.println("                    CHECKING ROW " + checkRow + " COL " + checkCol   );
+
+
+
+                            char state = scan(checkRow, checkCol);
+                            System.out.println(state + " row " + checkRow + " col " + checkCol);
+
+                            if (state == 'P' && i == 0)
+                                break;
+
+                            if (state == 'P' && i != 0)
+                            {
+                                while(x != b.getCol() * UNIT_SIZE && y != b.getRow() * UNIT_SIZE)
+                                {
+                                    moveBack();
+
+                                }
+
+                                break;
+                            }
+
+                            if(state == 'G')
+                            {
+                                System.out.println("FOUND GOLD");
+                                board.displayBoard(x,y, UNIT_SIZE);
+                                return;
+                                // running = false;
+                                // timer.stop();
+                                // System.exit(1);
+                            }
+
+
+
+
+
+                            move();
+
+
+                         //   repaint();
+
+
+
+                            if (direction == 'L')
+                                checkCol--;
+                            else if (direction == 'R')
+                                checkCol++;
+                            else if (direction == 'U')
+                                checkRow--;
+                            else if(direction == 'D')
+                                checkRow++;
+
+
+                        }
+
+
+
+
+
+
+                    }
+
+
+
+                }
+
+              //  System.out.println("x pos = " + x + " y pos = " + y);
+              //  System.out.println("beacon x = " + b.getCol() * UNIT_SIZE + " beacon y = " + b.getRow() * UNIT_SIZE );
+
+
+
+                while(x != b.getCol() * UNIT_SIZE || y != b.getRow() * UNIT_SIZE)
+                {
+
+                    moveBack();
+                    // rotate until opposite direction
+
+
+                    if (direction == 'L')
+                        direction = 'R';
+                    else if (direction == 'R')
+                        direction = 'L';
+                    else if (direction == 'U')
+                        direction = 'D';
+                    else if(direction == 'D')
+                        direction = 'U';
+
+
+
+                }
+
+                if (r != 1)
+                    while(direction != 'R')
+                        rotate();
+                else if (d != 1)
+                    while(direction != 'D')
+                        rotate();
+                else if (l != 1)
+                    while(direction != 'L')
+                        rotate();
+                else if (u != 1)
+                    while(direction != 'U')
+                        rotate();
+                // rotate until all sides are covered //
+
+
+
+
+
+            }
+
+            //System.exit(1);
+
+        }
+
+
+
+    }
+
+
+    public ArrayList <Move> addMoves( )
+    {
+
+        ArrayList<Move> moves = new ArrayList<Move>();
+        Move a;
+
+        int x2 = 0, y2 = 0;
+        System.out.println("OUTSIDE LOOP");
+
+        // x and  y position of miner
+        // x2 and y2 position being checked
+
         for(int i = 0; i < 4; i++)
         {
             // the following if statements are for assigning x2 and y2 to the row and col position of the tiles around the miner
 
             if (direction == 'R')
             {
-                   x2 = x + UNIT_SIZE;
-                   y2 = y;
+                x2 = x + UNIT_SIZE;
+                y2 = y;
             }
 
             else if(direction == 'D')
@@ -841,23 +1097,18 @@ public class GamePanel extends JPanel implements ActionListener{
                 int col = x2/ UNIT_SIZE;
                 int row = y2/ UNIT_SIZE;
 
-               // System.out.println("ROW PASSED  = " + row + "COL PASSED  = " + col);
-              //  if(!board.getBox(row,col).getScanned())
-            //    {
 
-               //     char state = board.getBox(row,col).getState(); /// this is scan //
+                char state =  scan(row,col);
+                //    System.out.println("SCANNED AREA :   ROW  = " + row + "COL = " + col + "STATE = " + state);
 
-                        char state =  scan(row,col);
-                        System.out.println("SCANNED AREA :   ROW  = " + row + "COL = " + col + "STATE = " + state);
+                board.getBox(row,col).setScanned(true);  // marking it as scanned;
 
-                    board.getBox(row,col).setScanned(true);  // marking it as scanned;
-
-                    a = new Move(row,col,state);
+                a = new Move(row,col,state);
 
 
-                    moves.add(a);
+                moves.add(a);
 
-             //   }
+                //   }
 
 
             }
@@ -868,225 +1119,84 @@ public class GamePanel extends JPanel implements ActionListener{
 
         }
 
-            b =  selectMove(moves); // b - coordinates of where miner will go
-            //configure current position to coordinates of the move
+        return moves;
 
-            System.out.println("    SELECTED MOVE: ROW = " + b.getRow() + " COL = " + b.getCol() + " STATE = " + b.getState());
-            System.out.println("CURRENT DIRECTION: " + direction);
 
-            while(!checkFront(b.getRow(), b.getCol()))
+    }
+
+
+
+
+
+
+
+
+
+
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+
+        if(running) {
+            // b is the selected move
+            Move b = null;
+
+            // if smart agent
+
+            if(agent == 1)
             {
-                rotate();
-                System.out.println("rotated to : " + direction);
+                b =  selectSmartMove(addMoves()); // b - coordinates of where miner will go
+                //configure current position to coordinates of the move
+
+//            System.out.println("    SELECTED MOVE: ROW = " + b.getRow() + " COL = " + b.getCol() + " STATE = " + b.getState());
+                //          System.out.println("CURRENT DIRECTION: " + direction);
+
+                while(!checkFront(b.getRow(), b.getCol()))
+                {
+                    rotate();
+                }
+
+                move();
+
+            }
+
+            // if random agent
+            else if(agent == 0)
+            {
+                b =  selectRandomMove(addMoves());
+
+                while(!checkFront(b.getRow(), b.getCol()))
+                {
+                    rotate();
+                }
+
+                move();
+
             }
 
 
-
-            move();
-
-            int x3 = 0, y3 = 0;
 
             // if miner moved to beacon
             if(b.getState() == 'B')
             {
 
-                System.out.println("Inside beacon..");
-                int numtiles = beacon(b.getRow(), b.getCol());
+                enteredBeacon(b);
 
-                System.out.println("GOLD IS " + numtiles + " tiles away!" );
-
-
-
-                if( numtiles != 0)
-                {
-                    // algo for beacon
-
-                    for(int p = 0; p < 4 ; p++)
-                    {
-                        //check collision here before proceeding//
-                        if (direction == 'R')
-                        {
-                            x3 = x + UNIT_SIZE;
-                            y3 = y;
-                        }
-
-                        else if(direction == 'D')
-                        {
-                            x3 = x;
-                            y3 = y + UNIT_SIZE;
-
-                        }
-
-                        else if (direction == 'L')
-                        {
-                            x3 = x - UNIT_SIZE;
-                            y3 = y;
-
-
-                        }
-
-                        else if (direction  == 'U')
-                        {
-
-                            x3 = x;
-                            y3 = y - UNIT_SIZE;
-
-                        }
-
-                        //System.out.println("X2 VAL = " + x2 + "Y2 VAL = " + y2);
-                        if (!checkCollision(x3,y3))
-                        {
-                            if(direction == 'R')
-                            {
-                                //limit it to x tiles only then go back if theres no gold
-                                for(int i = 0; i < numtiles; i++)
-                                {
-                                    move();
-
-                                    repaint();
-                                    if (board.getBox(y/UNIT_SIZE, x/UNIT_SIZE).getState() == 'G')
-                                    {
-                                        System.out.println("GOLD FOUND!");
-                                        running = false;
-                                        timer.stop();
-                                    }
-
-                                }
-
-                                // if didnt encounter any gold
-
-                                while(direction != 'L')
-                                    rotate();
-
-                                // move until back to previous position
-                                for(int j = 0; j < numtiles; j++)
-                                {
-                                    move();
-                                    repaint();
-
-                                }
-
-
-                            }
-
-                            if(direction == 'D')
-                            {
-                                //limit it to x tiles only then go back if theres no gold
-                                for(int i = 0; i < numtiles; i++)
-                                {
-                                    move();
-
-                                    repaint();
-                                    if (board.getBox(y/UNIT_SIZE, x/UNIT_SIZE).getState() == 'G')
-                                    {
-                                        System.out.println("GOLD FOUND!");
-                                        running = false;
-                                        timer.stop();
-                                    }
-
-                                }
-
-                                // if didnt encounter any gold
-
-                                while(direction != 'U')
-                                    rotate();
-
-                                // move until back to previous position
-                                for(int j = 0; j < numtiles; j++)
-                                {
-
-                                    repaint();
-                                    move();
-                                }
-
-                            }
-
-
-                            if(direction == 'L')
-                            {
-                                //limit it to x tiles only then go back if theres no gold
-                                for(int i = 0; i < numtiles; i++)
-                                {
-                                    move();
-
-                                    repaint();
-                                    if (board.getBox(y/UNIT_SIZE, x/UNIT_SIZE).getState() == 'G')
-                                    {
-                                        System.out.println("GOLD FOUND!");
-                                        running = false;
-                                        timer.stop();
-                                    }
-
-                                }
-
-                                // if didnt encounter any gold
-
-                                while(direction != 'R')
-                                    rotate();
-
-                                // move until back to previous position
-                                for(int j = 0; j < numtiles; j++)
-                                {
-                                    repaint();
-                                    move();
-
-                                }
-
-                            }
-
-                            if(direction == 'U')
-                            {
-                                //limit it to x tiles only then go back if theres no gold
-                                for(int i = 0; i < numtiles; i++)
-                                {
-                                    move();
-
-                                    repaint();
-                                    if (board.getBox(y/UNIT_SIZE, x/UNIT_SIZE).getState() == 'G')
-                                    {
-                                        System.out.println("GOLD FOUND!");
-                                        running = false;
-                                        timer.stop();
-                                    }
-
-                                }
-
-                                // if didnt encounter any gold
-
-                                while(direction != 'D')
-                                    rotate();
-
-                                // move until back to previous position
-                                for(int j = 0; j < numtiles; j++)
-                                {
-                                    repaint();
-                                    move();
-
-                                }
-                            }
-                        }
-
-
-
-
-
-
-                    }
-
-
-
-
-
-                }
-
-
+                System.out.println("    BEACON EXIT");
             }
+
+
+
+
 
 
 
 
             if (b.getState( ) == 'G' || b.getState() == 'P')
             {
+                board.displayBoard(x,y, UNIT_SIZE);
+
                 System.out.println("FINAL VAL OF X AND Y = " + x + "   " + y);
                 System.out.println("TOTAL ROTATES = " + rotates);
                 System.out.println("TOTAL SCANS = " + scans);
@@ -1100,45 +1210,10 @@ public class GamePanel extends JPanel implements ActionListener{
 
 
 
-
-
-
-
-
         }
-
-
-
-
 
         repaint();
+
     }
 
-    public class MyKeyAdapter extends KeyAdapter{
-        @Override
-        public void keyPressed(KeyEvent e) {
-            switch(e.getKeyCode()) {
-                case KeyEvent.VK_LEFT:
-                    if(direction != 'R') {
-                        direction = 'L';
-                    }
-                    break;
-                case KeyEvent.VK_RIGHT:
-                    if(direction != 'L') {
-                        direction = 'R';
-                    }
-                    break;
-                case KeyEvent.VK_UP:
-                    if(direction != 'D') {
-                        direction = 'U';
-                    }
-                    break;
-                case KeyEvent.VK_DOWN:
-                    if(direction != 'U') {
-                        direction = 'D';
-                    }
-                    break;
-            }
-        }
-    }
 }

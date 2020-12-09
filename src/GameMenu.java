@@ -29,7 +29,7 @@ public class GameMenu extends JFrame implements MouseListener{
 
         this.setBounds(100, 100, 600, 600);
 
-     //   menuPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+
         this.setLocationRelativeTo(null);
 
         this.setIconImage(Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemResource("pickaxe.png")));
@@ -95,12 +95,14 @@ public class GameMenu extends JFrame implements MouseListener{
         switch(i.getName())
         {
             case "smart.jb":
-                System.out.println("SMART HU");
+                System.out.println("SELECTED SMART AGENT");
                 this.setVisible(false);
-                GameFrame frame = new GameFrame();
+                GameFrame frameS = new GameFrame(1);
                 break;
             case "random.jb":
-                System.out.println("RANDOM UH");
+                System.out.println("SELECTED RANDOM AGENT");
+                this.setVisible(false);
+                GameFrame frameR = new GameFrame(0);
                 break;
 
 

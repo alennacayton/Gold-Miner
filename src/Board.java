@@ -59,12 +59,16 @@ public class Board {
     }
 
 
-    public void displayBoard ()
+    public void displayBoard (int x, int y, int u)
     {
         for(int a = 0; a < this.size; a++)
         {
             for(int b = 0; b < this.size; b++)
             {
+
+                if(a == y/u && b == x/u)
+                    System.out.print("M" + " ");
+                else
                 System.out.print(boxes[a][b].getState() + " ");
 
                 if (b == this.size - 1)
@@ -74,6 +78,9 @@ public class Board {
 
             }
         }
+
+
+/*
 
     int count = 0;
         for(int a = 0; a < this.size; a++)
@@ -92,7 +99,7 @@ public class Board {
         }
 
         System.out.println("COUNT " + count);
-
+*/
 
     }
 
