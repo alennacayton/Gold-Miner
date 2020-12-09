@@ -18,7 +18,7 @@ public class Board {
                 {
 
                         boxes[i][j] = new Tile (x,y);
-                        boxes[i][j].setState('*');
+                        boxes[i][j].setState('-');
 
 
                     x += unitSize;
@@ -32,19 +32,6 @@ public class Board {
         }
 
 
-
-
-        for(int a = 0; a < s; a++)
-        {
-            for(int b = 0; b < s; b++)
-            {
-                System.out.print(boxes[a][b].getState() + "  ");
-
-                if (b == s - 1)
-                    System.out.println();
-
-            }
-        }
 
 
 
@@ -67,14 +54,12 @@ public class Board {
             {
 
                 if(a == y/u && b == x/u)
-                    System.out.print("M" + " ");
+                    System.out.print("M" + "\t");
                 else
-                System.out.print(boxes[a][b].getState() + " ");
+                System.out.print(boxes[a][b].getState() + "\t");
 
                 if (b == this.size - 1)
-                    System.out.println();
-
-
+                    System.out.println( );
 
             }
         }
