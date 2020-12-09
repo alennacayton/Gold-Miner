@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import java.awt.event.*;
 import javax.imageio.ImageIO;
@@ -22,7 +21,7 @@ public class GamePanel extends JPanel implements ActionListener{
     static int mod;
 
     static int UNIT_SIZE;
-    static int DELAY = 700;
+    static int DELAY = 800;
 
 
     static int agent = -1;
@@ -44,13 +43,19 @@ public class GamePanel extends JPanel implements ActionListener{
     static int goldX;
     static int goldY;
 
+    static int bc = 0; //beacon move count
+    boolean goldVisible = false;
+    boolean gameover = false;
+    ArrayList<Move> bmoves = new ArrayList<Move>();
 
-    ArrayList<Integer> beaconX = new ArrayList<Integer>();
-    ArrayList<Integer> beaconY= new ArrayList<Integer>();
 
 
-    ArrayList<Integer> pitX = new ArrayList<Integer>();
-    ArrayList<Integer> pitY = new ArrayList<Integer>();
+    ArrayList<Integer> beaconX = new ArrayList<>();
+    ArrayList<Integer> beaconY= new ArrayList<>();
+
+
+    ArrayList<Integer> pitX = new ArrayList<>();
+    ArrayList<Integer> pitY = new ArrayList<>();
 
 
 
@@ -61,9 +66,7 @@ public class GamePanel extends JPanel implements ActionListener{
         // random agent = 0
 
         agent = a;
-
         importFiles();
-
 
 
         if (mod != 0){
@@ -80,7 +83,7 @@ public class GamePanel extends JPanel implements ActionListener{
     }
 
 
-    public class Move{
+    public static class Move{
 
         public int row;
         public int col;
@@ -311,27 +314,16 @@ public class GamePanel extends JPanel implements ActionListener{
         board.displayBoard(x,y, UNIT_SIZE);
 
 
-        switch(direction) {
-            case 'U':
-                y = y - UNIT_SIZE;
-                break;
-            case 'D':
-                y = y + UNIT_SIZE;
-                break;
-            case 'L':
-                x  = x  - UNIT_SIZE;
-                break;
-            case 'R':
-                x  = x  + UNIT_SIZE;
-                break;
+        switch (direction) {
+            case 'U' -> y = y - UNIT_SIZE;
+            case 'D' -> y = y + UNIT_SIZE;
+            case 'L' -> x = x - UNIT_SIZE;
+            case 'R' -> x = x + UNIT_SIZE;
         }
 
         System.out.println("MINER MOVED TO  ROW = " + y/UNIT_SIZE + " COL = " + x/UNIT_SIZE);
 
-
         movesnum += 1;
-
-
 
 
     }
@@ -375,7 +367,6 @@ public class GamePanel extends JPanel implements ActionListener{
             {
                 x2 = x - UNIT_SIZE;
                 y2 = y;
-
 
             }
 
@@ -505,27 +496,26 @@ public class GamePanel extends JPanel implements ActionListener{
         int firstEmpty = -1; // index of the first empty tile//
 
 
-        for (int i = 0; i < moves.size(); i++)
-        {
+        for (Move value : moves) {
+            System.out.println("    MOVE SELECTION ROW = " + value.getRow() + " MOVE COL = " + value.getCol() + " MOVE STATE = " + value.getState());
+        }
 
-            if(board.getBox(moves.get(i).getRow(),moves.get(i).getCol()).getVisited())
-            {
-                e = new Move(moves.get(i).getRow(),moves.get(i).getCol(),moves.get(i).getState());
+
+
+        for (Move move : moves) {
+
+            if (board.getBox(move.getRow(), move.getCol()).getVisited()) {
+                e = new Move(move.getRow(), move.getCol(), move.getState());
                 temp.add(e);
             }
-
-            else
-                continue;
-
 
         }
 
 
         for (int i = 0; i < moves.size(); i++)
         {
-            for( int j = 0; j < temp.size(); j++)
-            {
-                if(moves.get(i).getRow() == temp.get(j).getRow() && moves.get(i).getCol() == temp.get(j).getCol())
+            for (Move move : temp) {
+                if (moves.get(i).getRow() == move.getRow() && moves.get(i).getCol() == move.getCol())
                     moves.remove(i);
 
             }
@@ -535,67 +525,55 @@ public class GamePanel extends JPanel implements ActionListener{
         for(int j = 0; j < moves.size(); j++)
         {
             if(moves.get(j).getState() == 'G')
-            {
                 return moves.get(j);
-            }
 
+
+        }
+
+        for(int j = 0; j < moves.size(); j++)
+        {
             if(moves.get(j).getState() == 'B')
-            {
                 return moves.get(j);
-            }
 
             if(moves.get(j).getState() == 'P')
-            {
                 continue;
-            }
 
             if (moves.get(j).getState() == '-')
-            {
                 if(firstEmpty == -1)
                     firstEmpty = j;
-                else
-                    continue;
 
-            }
+
         }
 
 
         if(firstEmpty != -1)
-        return moves.get(firstEmpty);
+          return moves.get(firstEmpty);
 
         else{
 
-            for(int x = 0; x < temp.size(); x++)
-            {
-                if(temp.get(x).getState() == 'G')
-                {
-                    return temp.get(x);
-                }
+            for (Move move : temp) {
+                if (move.getState() == 'G')
+                    return move;
 
-                if(temp.get(x).getState() == 'B')
-                {
-                    return temp.get(x);
-                }
+            }
 
-                if(temp.get(x).getState() == 'P')
-                {
+
+            for (Move move : temp) {
+                if (move.getState() == 'B')
+                    return move;
+
+                if (move.getState() == 'P')
                     continue;
-                }
 
-                if (temp.get(x).getState() == '-')
-                {
-                    return temp.get(x);
-
-                }
+                if (move.getState() == '-')
+                    return move;
 
             }
 
 
         }
 
-
         return temp.get(0);
-
 
 
     }
@@ -605,17 +583,15 @@ public class GamePanel extends JPanel implements ActionListener{
     {
         int min = 0;
         int max = moves.size() - 1;
-        int num = 0;
+        int num;
 
 
-
-        do{
+        do {
             num = random.nextInt(max - min + 1) + min;
 
-        } while(moves.get(num).getState() == 'P');
+          } while(moves.get(num).getState() == 'P');
 
         return moves.get(num);
-
 
 
     }
@@ -685,25 +661,20 @@ public class GamePanel extends JPanel implements ActionListener{
     {
         if (direction == 'R')
         {
-            if (y/UNIT_SIZE == row && x/ UNIT_SIZE + 1 == col)
-                return true;
-
+            return y / UNIT_SIZE == row && x / UNIT_SIZE + 1 == col;
         }
         else if (direction == 'D')
         {
-            if(y/UNIT_SIZE + 1 == row && x/UNIT_SIZE == col)
-                return true;
+            return y / UNIT_SIZE + 1 == row && x / UNIT_SIZE == col;
         }
         else if (direction == 'L')
         {
-            if (y/UNIT_SIZE == row && x/ UNIT_SIZE - 1 == col)
-                return true;
+            return y / UNIT_SIZE == row && x / UNIT_SIZE - 1 == col;
 
         }
         else if(direction == 'U')
         {
-            if (y/UNIT_SIZE - 1 == row && x/ UNIT_SIZE  == col)
-                return true;
+            return y / UNIT_SIZE - 1 == row && x / UNIT_SIZE == col;
 
         }
         return false;
@@ -740,7 +711,7 @@ public class GamePanel extends JPanel implements ActionListener{
         }
 
 
-        move();
+        //move();
 
     }
 
@@ -748,6 +719,7 @@ public class GamePanel extends JPanel implements ActionListener{
     public void enteredBeacon(Move b)
     {
 
+        Move a;
 
         int numtiles = beacon(b.getRow(), b.getCol());
 
@@ -756,6 +728,9 @@ public class GamePanel extends JPanel implements ActionListener{
         // if gold is visible
         if(numtiles != 0)
         {
+            goldVisible = true;
+            a = new Move(y/UNIT_SIZE,x/UNIT_SIZE, board.getBox(y/UNIT_SIZE,x/UNIT_SIZE).getState());
+            bmoves.add(a);
             for(int j = 0; j < 4; j++)
             {
                 int checkRow = 0;
@@ -803,11 +778,15 @@ public class GamePanel extends JPanel implements ActionListener{
                             if (state == 'P' && i == 0)
                                 break;
 
-                            if (state == 'P' && i != 0)
+                            if (state == 'P')
                             {
                                 while(x != b.getCol() * UNIT_SIZE && y != b.getRow() * UNIT_SIZE)
                                 {
                                     moveBack();
+                                    move();
+                                   // System.out.println("MINER MOVED TO  ROW = " + y/UNIT_SIZE + " COL = " + x/UNIT_SIZE);
+                                    a = new Move(y/UNIT_SIZE,x/UNIT_SIZE, board.getBox(y/UNIT_SIZE,x/UNIT_SIZE).getState());
+                                    bmoves.add(a);
                                 }
 
                                 break;
@@ -817,12 +796,21 @@ public class GamePanel extends JPanel implements ActionListener{
                             {
                                // System.out.println("FOUND GOLD");
                                // board.displayBoard(x,y, UNIT_SIZE);
+
+
+
+                                move();
+                                a = new Move(y/UNIT_SIZE,x/UNIT_SIZE, board.getBox(y/UNIT_SIZE,x/UNIT_SIZE).getState());
+                                bmoves.add(a);
+
                                 return;
                             }
 
 
 
                             move();
+                            a = new Move(y/UNIT_SIZE,x/UNIT_SIZE, board.getBox(y/UNIT_SIZE,x/UNIT_SIZE).getState());
+                            bmoves.add(a);
 
 
                             if (direction == 'L')
@@ -843,11 +831,13 @@ public class GamePanel extends JPanel implements ActionListener{
                 }
 
 
-
                 while(x != b.getCol() * UNIT_SIZE || y != b.getRow() * UNIT_SIZE)
                 {
 
                     moveBack();
+                    move();
+                    a = new Move(y/UNIT_SIZE,x/UNIT_SIZE, board.getBox(y/UNIT_SIZE,x/UNIT_SIZE).getState());
+                    bmoves.add(a);
                     // rotate until opposite direction
 
                     if (direction == 'L')
@@ -940,7 +930,7 @@ public class GamePanel extends JPanel implements ActionListener{
                 int row = y2/ UNIT_SIZE;
 
                 char state =  scan(row,col);
-                a = new Move(row,col,state);
+                a = new Move(row, col, state);
 
 
                 moves.add(a);
@@ -968,77 +958,84 @@ public class GamePanel extends JPanel implements ActionListener{
 
 
 
-
-
     @Override
     public void actionPerformed(ActionEvent e) {
 
 
         if(running) {
+
             // b is the selected move
             Move b = null;
-
-            // if smart agent
-            if(agent == 1)
+            if (!goldVisible)
             {
-                b =  selectSmartMove(addMoves()); // b - coordinates of where miner will go
-
-                while(!checkFront(b.getRow(), b.getCol()))
+                // if smart agent
+                if(agent == 1)
                 {
+                    b =  selectSmartMove(addMoves()); // b - coordinates of where miner will go
+
+                                System.out.println("SELECTED MOVE: ROW = " + b.getRow() + " COL = " + b.getCol() + " STATE = " + b.getState());
+                              System.out.println("CURRENT DIRECTION: " + direction);
+                }
+
+                // if random agent
+                else if(agent == 0)
+                {
+                    b =  selectRandomMove(addMoves());
+                }
+
+                while(true)
+                {
+                    assert b != null;
+                    if (checkFront(b.getRow(), b.getCol())) break;
                     rotate();
                 }
 
                 move();
 
-            }
-
-            // if random agent
-            else if(agent == 0)
-            {
-                b =  selectRandomMove(addMoves());
-
-                while(!checkFront(b.getRow(), b.getCol()))
+                // if miner moved to beacon
+                if(b.getState() == 'B' && agent == 1)
                 {
-                    rotate();
+                    enteredBeacon(b);
                 }
 
-                move();
 
             }
 
 
-
-            // if miner moved to beacon
-            if(b.getState() == 'B')
+            if(goldVisible)
             {
+                if(bc < bmoves.size())
+                {
+                    //System.out.println(bc);
+                    x = bmoves.get(bc).getCol() * UNIT_SIZE;
+                    y = bmoves.get(bc).getRow() * UNIT_SIZE;
 
-                enteredBeacon(b);
+
+                    bc++;
+
+
+                }
+
 
             }
 
+                if (x == goldX && y == goldY) {
 
 
+                    board.displayBoard(x, y, UNIT_SIZE);
 
 
-            if (b.getState( ) == 'G' || b.getState() == 'P')
-            {
-                board.displayBoard(x,y, UNIT_SIZE);
+                    System.out.println("\nGOLD FOUND!\n");
 
+                    System.out.println("FINAL POSITION ROW = " + y / UNIT_SIZE + " COLUMN = " + x / UNIT_SIZE);
+                    System.out.println("TOTAL ROTATES = " + rotates);
+                    System.out.println("TOTAL SCANS = " + scans);
+                    System.out.println("TOTAL MOVES = " + movesnum);
 
-                System.out.println("\nGOLD FOUND!\n");
+                    running = false;
+                    timer.stop();
 
-                System.out.println("FINAL POSITION ROW = " + y/UNIT_SIZE + " COLUMN = " + x/UNIT_SIZE);
-                System.out.println("TOTAL ROTATES = " + rotates);
-                System.out.println("TOTAL SCANS = " + scans);
-                System.out.println("TOTAL MOVES = " + movesnum );
-
-
-                running = false;
-                timer.stop();
-
-            }
-
-
+                }
 
         }
 

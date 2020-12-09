@@ -80,13 +80,12 @@ public class GameMenu extends JFrame implements MouseListener{
     }
 
 
-
-
     public void AddListener(EventListener e)
     {
         smartButton.addMouseListener((MouseListener) e);
         randomButton.addMouseListener((MouseListener) e);
     }
+
 
     @Override
     public void mousePressed(MouseEvent e)
