@@ -47,6 +47,7 @@ public class GamePanel extends JPanel implements ActionListener{
     boolean goldVisible = false;
     boolean gameover = false;
     ArrayList<Move> bmoves = new ArrayList<Move>();
+    static int win = 0;
 
 
 
@@ -299,7 +300,7 @@ public class GamePanel extends JPanel implements ActionListener{
 
         }
         else {
-            goldFound(g);
+            gameOver(g);
         }
 
     }
@@ -583,10 +584,10 @@ public class GamePanel extends JPanel implements ActionListener{
         int num;
 
 
-        do {
+      //  do {
             num = random.nextInt(max - min + 1) + min;
 
-          } while(moves.get(num).getState() == 'P');
+       //   } while(moves.get(num).getState() == 'P');
 
         return moves.get(num);
 
@@ -630,23 +631,50 @@ public class GamePanel extends JPanel implements ActionListener{
 
     }
 
-    public void goldFound(Graphics g) {
+    public void gameOver(Graphics g) {
 
         //Game Over display
-        g.setColor(Color.yellow);
-        g.setFont( new Font("Ink Free",Font.BOLD, 75));
-        FontMetrics metrics2 = getFontMetrics(g.getFont());
-        g.drawString("Gold Found!", ((int)SCREEN_WIDTH - metrics2.stringWidth("Gold Found!"))/2, (int)SCREEN_HEIGHT/2 - 80);
+
+        if(win == 1)
+        {
+            g.setColor(Color.yellow);
+            g.setFont( new Font("Ink Free",Font.BOLD, 75));
+            FontMetrics metrics2 = getFontMetrics(g.getFont());
+            g.drawString("Gold Found!", ((int)SCREEN_WIDTH - metrics2.stringWidth("Gold Found!"))/2, (int)SCREEN_HEIGHT/2 - 80);
 
 
 
-        g.setColor(Color.yellow);
-        g.setFont( new Font("Ink Free",Font.BOLD, 30));
-        FontMetrics metrics3 = getFontMetrics(g.getFont());
+            g.setColor(Color.yellow);
+            g.setFont( new Font("Ink Free",Font.BOLD, 30));
+            FontMetrics metrics3 = getFontMetrics(g.getFont());
 
-        g.drawString("TOTAL MOVES: " + movesnum, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 10, (int)SCREEN_HEIGHT/2 + 75 - 80);
-        g.drawString("TOTAL ROTATES: " + rotates, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 40, (int)SCREEN_HEIGHT/2 + 120 - 80);
-        g.drawString("TOTAL SCANS: " + scans, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 10, (int)SCREEN_HEIGHT/2 + 165 - 80);
+            g.drawString("TOTAL MOVES: " + movesnum, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 10, (int)SCREEN_HEIGHT/2 + 75 - 80);
+            g.drawString("TOTAL ROTATES: " + rotates, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 40, (int)SCREEN_HEIGHT/2 + 120 - 80);
+            g.drawString("TOTAL SCANS: " + scans, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 10, (int)SCREEN_HEIGHT/2 + 165 - 80);
+
+        }
+
+        else if (win == -1)
+        {
+            g.setColor(Color.red);
+            g.setFont( new Font("Ink Free",Font.BOLD, 75));
+            FontMetrics metrics2 = getFontMetrics(g.getFont());
+            g.drawString("Game Over!", ((int)SCREEN_WIDTH - metrics2.stringWidth("Game Over!"))/2, (int)SCREEN_HEIGHT/2 - 80);
+
+
+
+            g.setColor(Color.red);
+            g.setFont( new Font("Ink Free",Font.BOLD, 30));
+            FontMetrics metrics3 = getFontMetrics(g.getFont());
+
+            g.drawString("TOTAL MOVES: " + movesnum, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 10, (int)SCREEN_HEIGHT/2 + 75 - 80);
+            g.drawString("TOTAL ROTATES: " + rotates, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 40, (int)SCREEN_HEIGHT/2 + 120 - 80);
+            g.drawString("TOTAL SCANS: " + scans, ((int)SCREEN_WIDTH - metrics3.stringWidth("TOTAL MOVES "))/2 - 10, (int)SCREEN_HEIGHT/2 + 165 - 80);
+        }
+
+
+
+
 
     }
 
@@ -1006,7 +1034,7 @@ public class GamePanel extends JPanel implements ActionListener{
                     x = bmoves.get(bc).getCol() * UNIT_SIZE;
                     y = bmoves.get(bc).getRow() * UNIT_SIZE;
 
-
+                b = new Move(bmoves.get(bc).getRow(), bmoves.get(bc).getCol(), bmoves.get(bc).getState() );
                     bc++;
 
 
@@ -1021,25 +1049,46 @@ public class GamePanel extends JPanel implements ActionListener{
                     timer.stop();
                 }
 
+                if(!gameover)
+                {
+                    if (b.getState() == 'G' || b.getState() == 'P') {
 
-                if (x == goldX && y == goldY) {
-
-                    gameover = true;
-
-
-                    board.displayBoard(x, y, UNIT_SIZE);
+                        gameover = true;
 
 
-                    System.out.println("\nGOLD FOUND!\n");
+                        board.displayBoard(x, y, UNIT_SIZE);
 
-                    System.out.println("FINAL POSITION ROW = " + y / UNIT_SIZE + " COLUMN = " + x / UNIT_SIZE);
-                    System.out.println("TOTAL ROTATES = " + rotates);
-                    System.out.println("TOTAL SCANS = " + scans);
-                    System.out.println("TOTAL MOVES = " + movesnum);
+                        if(b.getState() == 'G')
+                        {
+                            win = 1;
+                            System.out.println("\nGOLD FOUND!\n");
+                        }
+
+
+                        else
+                        {
+                            win = -1;
+                            System.out.println("\nGAME OVER!\n");
+                        }
+
+
+
+                        System.out.println("FINAL POSITION ROW = " + y / UNIT_SIZE + " COLUMN = " + x / UNIT_SIZE);
+                        System.out.println("TOTAL ROTATES = " + rotates);
+                        System.out.println("TOTAL SCANS = " + scans);
+                        System.out.println("TOTAL MOVES = " + movesnum);
+
+
+
+                    }
+
+
 
 
 
                 }
+
+
 
 
 
