@@ -163,6 +163,8 @@ public class GamePanel extends JPanel implements ActionListener{
                 board.getBox(Integer.parseInt(goldXY[0]), Integer.parseInt(goldXY[1])).setState('G');
 
 
+
+
                     reader.nextLine();
 
                     String line;
@@ -494,11 +496,6 @@ public class GamePanel extends JPanel implements ActionListener{
         ArrayList<Move> temp = new ArrayList<Move>();
         Move e;
         int firstEmpty = -1; // index of the first empty tile//
-
-
-        for (Move value : moves) {
-            System.out.println("    MOVE SELECTION ROW = " + value.getRow() + " MOVE COL = " + value.getCol() + " MOVE STATE = " + value.getState());
-        }
 
 
 
@@ -973,8 +970,7 @@ public class GamePanel extends JPanel implements ActionListener{
                 {
                     b =  selectSmartMove(addMoves()); // b - coordinates of where miner will go
 
-                                System.out.println("SELECTED MOVE: ROW = " + b.getRow() + " COL = " + b.getCol() + " STATE = " + b.getState());
-                              System.out.println("CURRENT DIRECTION: " + direction);
+
                 }
 
                 // if random agent
@@ -1019,7 +1015,16 @@ public class GamePanel extends JPanel implements ActionListener{
 
             }
 
+                if(gameover)
+                {
+                    running = false;
+                    timer.stop();
+                }
+
+
                 if (x == goldX && y == goldY) {
+
+                    gameover = true;
 
 
                     board.displayBoard(x, y, UNIT_SIZE);
@@ -1032,14 +1037,24 @@ public class GamePanel extends JPanel implements ActionListener{
                     System.out.println("TOTAL SCANS = " + scans);
                     System.out.println("TOTAL MOVES = " + movesnum);
 
-                    running = false;
-                    timer.stop();
+
 
                 }
+
+
+
 
         }
 
         repaint();
+
+
+
+
+
+
+
+
 
     }
 
