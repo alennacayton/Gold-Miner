@@ -1,3 +1,5 @@
+
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.imageio.ImageIO;
@@ -21,7 +23,7 @@ public class GamePanel extends JPanel implements ActionListener{
     static int mod;
 
     static int UNIT_SIZE;
-    static int DELAY = 800;
+    static int DELAY = 500;
 
 
     static int agent = -1;
@@ -386,17 +388,20 @@ public class GamePanel extends JPanel implements ActionListener{
                 // check all four directions for first occurrence of any state aside from a blank tile
                 if (check == 1)
                 {
-
                     for(int i = col + 1; i < n; i++)
                     {
                         count += 1;
 
                         if(board.getBox(row,i).getState() == 'G')
+                        {
                             return count;
+                        }
+
                         if(board.getBox(row,i).getState() == 'P')
                             return 0;
 
                     }
+
 
                 }
 
@@ -412,12 +417,10 @@ public class GamePanel extends JPanel implements ActionListener{
 
                     }
 
-
                 }
 
                 else if (check == 3)
                 {
-
                     for(int i = col - 1; i > n; i--)
                     {
                         count += 1;
@@ -428,7 +431,6 @@ public class GamePanel extends JPanel implements ActionListener{
                             return 0;
 
                     }
-
                 }
 
                 else if (check  == 4)
@@ -447,6 +449,9 @@ public class GamePanel extends JPanel implements ActionListener{
                 }
 
             }
+
+            if (check == 4)
+                check = 0;
 
 
             check++;
@@ -497,6 +502,11 @@ public class GamePanel extends JPanel implements ActionListener{
         ArrayList<Move> temp = new ArrayList<Move>();
         Move e;
         int firstEmpty = -1; // index of the first empty tile//
+
+
+        for(int j = 0; j < moves.size(); j++){
+            System.out.println("    SELECTION MOVES ROW = " + moves.get(j).getRow() + " MOVE COL = " + moves.get(j).getCol() + " MOVE STATE = " + moves.get(j).getState());
+        }
 
 
 
@@ -753,6 +763,7 @@ public class GamePanel extends JPanel implements ActionListener{
         // if gold is visible
         if(numtiles != 0)
         {
+
             goldVisible = true;
             a = new Move(y/UNIT_SIZE,x/UNIT_SIZE, board.getBox(y/UNIT_SIZE,x/UNIT_SIZE).getState());
             bmoves.add(a);
@@ -997,7 +1008,8 @@ public class GamePanel extends JPanel implements ActionListener{
                 if(agent == 1)
                 {
                     b =  selectSmartMove(addMoves()); // b - coordinates of where miner will go
-
+            System.out.println("    SELECTED MOVE: ROW = " + b.getRow() + " COL = " + b.getCol() + " STATE = " + b.getState());
+                              System.out.println("CURRENT DIRECTION: " + direction);
 
                 }
 
@@ -1020,6 +1032,7 @@ public class GamePanel extends JPanel implements ActionListener{
                 if(b.getState() == 'B' && agent == 1)
                 {
                     enteredBeacon(b);
+
                 }
 
 
